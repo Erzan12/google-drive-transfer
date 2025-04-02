@@ -40,5 +40,22 @@ app.get("/auth/callback", async (req, res) => {
     res.send("Authentication successful! You can now transfer ownership.");
 });
 
+// Fetch files from the owner
+app.get("/files", async (req, res) => {
+    const drive = google.drive({ version: "v3", auth: oauth2Client });
+
+    try {
+        const response = await drive.files.list({
+            q: "'me' in owners", // Get files where the user is the owner
+            fields: "files(id, name, owners)",
+        });
+
+        res.json(response.data.files);
+    } catch (error) {
+        res.status(500).send("Error fetching files: " + error.message);
+    }
+});
+
+
 // Start server
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
